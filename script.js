@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // BANKIST APP
-// test
+
 // Data
 const account1 = {
   owner: 'Jonas Schmedtmann',
@@ -35,6 +35,8 @@ const account4 = {
 
 const accounts = [account1, account2, account3, account4];
 
+const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+
 // Elements
 const labelWelcome = document.querySelector('.welcome');
 const labelDate = document.querySelector('.date');
@@ -61,17 +63,7 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
-// LECTURES
-
-const currencies = new Map([
-  ['USD', 'United States dollar'],
-  ['EUR', 'Euro'],
-  ['GBP', 'Pound sterling'],
-]);
-
-const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+// Functionallity
 
 const displayMovements = movements => {
   containerMovements.innerHTML = '';
@@ -93,23 +85,66 @@ const displayMovements = movements => {
 
 displayMovements(movements);
 
+const createUsernames = accs => {
+  accs.forEach(acc => {
+    acc.username = acc.owner
+      .toLowerCase()
+      .split(' ')
+      .map(name => name[0])
+      .join('');
+  });
+};
+
+createUsernames(accounts);
+
+const calcDisplayBalance = movements => {
+  const balance = movements.reduce((summ, mov) => summ + mov, 0);
+  labelBalance.textContent = `${balance}€`
+};
+
+calcDisplayBalance(account1.movements);
+
+/////////////////////////////////////////////////
+/////////////////////////////////////////////////
+// LECTURES
+
+const currencies = new Map([
+  ['USD', 'United States dollar'],
+  ['EUR', 'Euro'],
+  ['GBP', 'Pound sterling'],
+]);
+
 // Map, filter, reduce
 // Map возвращает новый массив когда коллбек-функция отработала с элементами оригинала
 
-const eurToUsd = 1.1;
-const movementsUSD = movements.map(mov => mov * eurToUsd);
+// const eurToUsd = 1.1;
+// const movementsUSD = movements.map(mov => mov * eurToUsd);
 
-console.log(movementsUSD);
+// console.log(movementsUSD);
 
-const movementsDescription = movements.map(
-  (mov, i) =>
-    `Movement ${i + 1}: You ${mov > 0 ? 'deposited' : 'withdrew'} ${Math.abs(
-      mov
-    )}`
-);
+// const movementsDescription = movements.map(
+//   (mov, i) =>
+//     `Movement ${i + 1}: You ${mov > 0 ? 'deposited' : 'withdrew'} ${Math.abs(
+//       mov
+//     )}`
+// );
 
-console.log(movementsDescription);
-// Lections
+// console.log(movementsDescription);
+
+// const deposits = movements.filter(mov => mov > 0);
+// const withdrawals = movements.filter(mov => mov < 0);
+// const balance = movements.reduce((summ, mov) => summ + mov, 0);
+// .reduce(accumulator, current element, index, array) 0 в качестве второго аргумента - это стартовая позиция счётчика
+
+// Maximum value of the array
+const maxValue = movements.reduce((acc, mov) => acc > mov ? acc : mov, movements[0]);
+console.log(maxValue)
+
+// const depositsFor = [];
+// // for (const mov of movements) if (mov > 0) depositsFor.push(); для сравнения как бы for loop
+
+// console.log(deposits, withdrawals, balance);
+
 // Концептуальное различие forEach от for-of цикла в том, что в forEach нет break. Невозможно остановить цикл, коллбек функция будет выполняться
 // на каждый элемент массива
 // movements.forEach(function (mov, i, arr) {
