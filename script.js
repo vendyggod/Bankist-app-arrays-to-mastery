@@ -63,6 +63,36 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
+// Login
+let currentAccount;
+
+btnLogin.addEventListener('click', function (event) {
+  // Preventing from page reload (submitting)
+  event.preventDefault();
+
+  currentAccount = accounts.find(
+    acc => acc.username === inputLoginUsername.value
+  );
+
+  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    labelWelcome.textContent = `Welcome, ${
+      currentAccount.owner.split(' ')[0]
+    }!`;
+
+    displayMovements(currentAccount.movements);
+    calcDisplayBalance(currentAccount.movements);
+    calcDisplaySummary(currentAccount);
+
+    containerApp.style.opacity = '100';
+
+    inputLoginUsername.value = inputLoginPin.value = '';
+
+    inputLoginUsername.blur();
+    inputLoginPin.blur();
+  } else {
+    alert('Incorrect credentials!');
+  }
+});
 // Functionallity
 
 const displayMovements = movements => {
@@ -83,8 +113,6 @@ const displayMovements = movements => {
   });
 };
 
-displayMovements(movements);
-
 const createUsernames = accs => {
   accs.forEach(acc => {
     acc.username = acc.owner
@@ -102,17 +130,34 @@ const calcDisplayBalance = movements => {
   labelBalance.textContent = `${balance}€`;
 };
 
-calcDisplayBalance(account1.movements);
+const calcDisplaySummary = acc => {
+  const income = acc.movements
+    .filter(mov => mov > 0)
+    .reduce((summ, mov) => summ + mov, 0);
+  const out = acc.movements
+    .filter(mov => mov < 0)
+    .reduce((summ, mov) => summ + mov, 0);
+
+  const interest = acc.movements
+    .filter(mov => mov > 0)
+    .map(deposit => (deposit * acc.interestRate) / 100)
+    .filter(dep => dep >= 1)
+    .reduce((summ, dep) => summ + dep, 0);
+
+  labelSumIn.textContent = `${income}€`;
+  labelSumOut.textContent = `${Math.abs(out)}€`;
+  labelSumInterest.textContent = `${interest}€`;
+};
 
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // LECTURES
 
-const currencies = new Map([
-  ['USD', 'United States dollar'],
-  ['EUR', 'Euro'],
-  ['GBP', 'Pound sterling'],
-]);
+// const currencies = new Map([
+//   ['USD', 'United States dollar'],
+//   ['EUR', 'Euro'],
+//   ['GBP', 'Pound sterling'],
+// ]);
 
 // Map, filter, reduce
 // Map возвращает новый массив когда коллбек-функция отработала с элементами оригинала
@@ -137,11 +182,11 @@ const currencies = new Map([
 // .reduce(accumulator, current element, index, array) 0 в качестве второго аргумента - это стартовая позиция счётчика
 
 // Maximum value of the array
-const maxValue = movements.reduce(
-  (acc, mov) => (acc > mov ? acc : mov),
-  movements[0]
-);
-console.log(maxValue);
+// const maxValue = movements.reduce(
+//   (acc, mov) => (acc > mov ? acc : mov),
+//   movements[0]
+// );
+// console.log(maxValue);
 
 // const depositsFor = [];
 // // for (const mov of movements) if (mov > 0) depositsFor.push(); для сравнения как бы for loop
@@ -231,5 +276,3 @@ console.log(maxValue);
 // Test.assertEquals(secondLargest([5,5,5,5,5,5]), undefined);
 // Test.assertEquals(secondLargest([0, 1, '2', 3]), 2);
 // Test.assertEquals(secondLargest(['-1', 2, null, false]), -1);
-
-console.log(typeof [2, 3, '2']);
