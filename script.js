@@ -63,6 +63,12 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
+// Updating app
+const updateApp = () => {
+  displayMovements(currentAccount);
+  calcDisplayBalance(currentAccount);
+  calcDisplaySummary(currentAccount);
+};
 // Login
 let currentAccount;
 
@@ -79,11 +85,9 @@ btnLogin.addEventListener('click', function (event) {
       currentAccount.owner.split(' ')[0]
     }!`;
 
-    displayMovements(currentAccount.movements);
-    calcDisplayBalance(currentAccount.movements);
-    calcDisplaySummary(currentAccount);
+    updateApp();
 
-    containerApp.style.opacity = '100';
+    containerApp.style.opacity = 100;
 
     inputLoginUsername.value = inputLoginPin.value = '';
 
@@ -93,12 +97,54 @@ btnLogin.addEventListener('click', function (event) {
     alert('Incorrect credentials!');
   }
 });
+
+// Transfer money
+btnTransfer.addEventListener('click', function (event) {
+  event.preventDefault();
+
+  const amount = Number(inputTransferAmount.value);
+  const receiver = accounts.find(acc => acc.username === inputTransferTo.value);
+
+  if (
+    currentAccount.balance >= amount > 0 &&
+    receiver &&
+    receiver?.username !== currentAccount.username
+  ) {
+    currentAccount.movements.push(-amount);
+    receiver.movements.push(amount);
+  }
+
+  updateApp();
+
+  inputTransferTo.value = inputTransferAmount.value = '';
+  inputTransferTo.blur();
+  inputTransferAmount.blur();
+});
+
+// Closing account
+
+btnClose.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  if (
+    currentAccount.username === inputCloseUsername.value &&
+    currentAccount.pin === Number(inputClosePin.value)
+  ) {
+    const index = accounts.findIndex(
+      acc => acc.username === currentAccount.username
+    );
+    accounts.splice(index, 1);
+    containerApp.style.opacity = 0;
+    inputCloseUsername = inputClosePin = '';
+  }
+});
+
 // Functionallity
 
-const displayMovements = movements => {
+const displayMovements = acc => {
   containerMovements.innerHTML = '';
 
-  movements.forEach(function (mov, i) {
+  acc.movements.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
 
     const html = `
@@ -125,9 +171,9 @@ const createUsernames = accs => {
 
 createUsernames(accounts);
 
-const calcDisplayBalance = movements => {
-  const balance = movements.reduce((summ, mov) => summ + mov, 0);
-  labelBalance.textContent = `${balance}€`;
+const calcDisplayBalance = acc => {
+  acc.balance = acc.movements.reduce((summ, mov) => summ + mov, 0);
+  labelBalance.textContent = `${acc.balance}€`;
 };
 
 const calcDisplaySummary = acc => {
@@ -230,49 +276,3 @@ const calcDisplaySummary = acc => {
 
 // console.log(calcAverageHumanAge([5, 2, 4, 1, 15, 8, 3]));
 // console.log(calcAverageHumanAge([16, 6, 10, 5, 6, 1, 4]));
-
-// const summ = arr => {
-//   const arrCopy = arr.slice().sort();
-//   const arrUnique = [];
-
-//   for (let i = 0; i < arrCopy.length; i++) {
-//     if (arrCopy[i] !== arrCopy[i - 1] && arrCopy[i] !== arrCopy[i + 1])
-//       arrUnique.push(arrCopy[i]);
-//   }
-//   return arrUnique.reduce((acc, num) => acc + num, 0);
-// };
-
-// console.log(summ([6, 3, 4, 3, 3, 4, 4, 6, 3, 4, 6])); // = > 10
-// console.log(summ([5, 6, 10, 3, 10, 10, 6, 7, 0, 9, 1, 1, 6, 3, 1]));
-
-// const summ2 = arr => {
-//   return arr
-//     .filter(num => arr.indexOf(num) === arr.lastIndexOf(num))
-//     .reduce((acc, num) => acc + num, 0);
-// };
-
-// console.log(summ2([6, 3, 4, 3, 3, 4, 4, 6, 3, 4, 6])); // = > 10
-// console.log(summ2([5, 6, 10, 3, 10, 10, 6, 7, 0, 9, 1, 1, 6, 3, 1]));
-
-// function secondLargest(array) {
-//   const arrCopy =
-//     typeof array === 'object'
-//       ? [...new Set(array)].filter(el => typeof el === 'number' || 0).sort()
-//       : undefined;
-//   console.log(arrCopy);
-//   return arrCopy && arrCopy.length > 1
-//     ? Number(arrCopy.slice(-2)[0])
-//     : undefined;
-// }
-
-// console.log(secondLargest([-32, 11, 43, 55, 0, 11]));
-// console.log(secondLargest(['-1', 2, null, false]));
-// console.log(secondLargest([2, true, 0]));
-// console.log(secondLargest('32 11 44 56'));
-// console.log(secondLargest([0, 1, '2', 3]));
-
-// Test.assertEquals(secondLargest([-32,11,43,55,0,11]), 43);
-// Test.assertEquals(secondLargest(null), undefined);
-// Test.assertEquals(secondLargest([5,5,5,5,5,5]), undefined);
-// Test.assertEquals(secondLargest([0, 1, '2', 3]), 2);
-// Test.assertEquals(secondLargest(['-1', 2, null, false]), -1);
