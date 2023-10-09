@@ -63,13 +63,13 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-// Updating app
+// UPDATE APP
 const updateApp = () => {
   displayMovements(currentAccount);
   calcDisplayBalance(currentAccount);
   calcDisplaySummary(currentAccount);
 };
-// Login
+// LOGIN
 let currentAccount;
 
 btnLogin.addEventListener('click', function (event) {
@@ -98,7 +98,7 @@ btnLogin.addEventListener('click', function (event) {
   }
 });
 
-// Transfer money
+// TRANSFER MONEY
 btnTransfer.addEventListener('click', function (event) {
   event.preventDefault();
 
@@ -121,8 +121,27 @@ btnTransfer.addEventListener('click', function (event) {
   inputTransferAmount.blur();
 });
 
-// Closing account
+// REQUEST LOAN
+btnLoan.addEventListener('click', function (e) {
+  e.preventDefault();
 
+  const loanAmount = Number(inputLoanAmount.value);
+  if (
+    loanAmount > 0 &&
+    currentAccount.movements.some(mov => mov >= loanAmount * 0.1)
+  ) {
+    currentAccount.movements.push(loanAmount);
+
+    inputLoanAmount.value = '';
+    inputLoanAmount.blur();
+
+    updateApp();
+  } else {
+    inputLoanAmount.blur();
+  }
+});
+
+// CLOSE CURRENT ACCOUNT
 btnClose.addEventListener('click', function (e) {
   e.preventDefault();
 
@@ -139,12 +158,21 @@ btnClose.addEventListener('click', function (e) {
   }
 });
 
-// Functionallity
+// SORTING
+let sorted = false;
+btnSort.addEventListener('click', function (e) {
+  e.preventDefault();
+  displayMovements(currentAccount.movements, !sorted);
+  sorted = !sorted;
+});
 
-const displayMovements = acc => {
+// DISPLAYS
+const displayMovements = (acc, sort = false) => {
   containerMovements.innerHTML = '';
 
-  acc.movements.forEach(function (mov, i) {
+  const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;
+
+  movs.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
 
     const html = `
@@ -276,3 +304,19 @@ const calcDisplaySummary = acc => {
 
 // console.log(calcAverageHumanAge([5, 2, 4, 1, 15, 8, 3]));
 // console.log(calcAverageHumanAge([16, 6, 10, 5, 6, 1, 4]));
+
+// Flat and flatMap methods
+
+// Хотим получить баланс всех акков (банка)
+
+const overallBalance = accounts
+  .map(acc => acc.movements)
+  .flat() // в скобках можно указывать 1-2-3, смотря насколько уровней nested arrays мы хотим углубиться
+  .reduce((accumulator, mov) => accumulator + mov, 0);
+console.log(overallBalance);
+
+// flatMap лучше для производительности
+const overallBalance2 = accounts
+  .flatMap(acc => acc.movements) // flatMap идёт только на 1 уровень ниже
+  .reduce((acc, mov) => acc + mov, 0);
+console.log(overallBalance2);
